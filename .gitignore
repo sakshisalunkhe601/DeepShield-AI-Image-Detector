@@ -2,6 +2,3 @@ venv/
 __pycache__/
 *.pyc
 static/uploads/*
-dataset/
-models/*.h5
-dataset/*

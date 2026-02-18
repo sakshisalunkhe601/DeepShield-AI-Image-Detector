@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DeepShield - AI Detection System</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .card {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            border-radius: 20px;
+            padding: 40px;
+            width: 420px;
+            text-align: center;
+            box-shadow: 0 0 30px rgba(0,0,0,0.5);
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+            font-size: 26px;
+        }
+
+        input[type="file"] {
+            margin: 15px 0;
+            color: white;
+        }
+
+        button {
+            padding: 10px 25px;
+            font-size: 16px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            background: linear-gradient(90deg, #00c6ff, #0072ff);
+            color: white;
+            transition: 0.3s;
+        }
+
+        button:hover {
+            transform: scale(1.05);
+        }
+
+        img {
+            margin-top: 20px;
+            width: 250px;
+            border-radius: 15px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.6);
+        }
+
+        .badge {
+            margin-top: 20px;
+            font-size: 20px;
+            font-weight: bold;
+            padding: 10px;
+            border-radius: 20px;
+        }
+
+        .progress-container {
+            width: 100%;
+            background: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            margin-top: 15px;
+        }
+
+        .progress-bar {
+            height: 25px;
+            border-radius: 30px;
+            text-align: center;
+            line-height: 25px;
+            font-weight: bold;
+            transition: width 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {opacity: 0; transform: translateY(20px);}
+            to {opacity: 1; transform: translateY(0);}
+        }
+
+        .footer {
+            margin-top: 20px;
+            font-size: 12px;
+            opacity: 0.7;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="card">
+
+    <h1>🔍 DeepShield AI Detection</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <input type="file" name="image" required>
+        <br>
+        <button type="submit">Analyze Image</button>
+    </form>
+
+    {% if label %}
+
+        <div class="badge" style="background-color: {{ color }};">
+            {{ label }}
+        </div>
+
+        <div class="progress-container">
+            <div class="progress-bar"
+                 style="width: {{ confidence }}%; background: linear-gradient(90deg, {{ color }}, #ffffff33);">
+                {{ confidence }}%
+            </div>
+        </div>
+
+        <img src="{{ image_path }}">
+
+    {% endif %}
+
+    <div class="footer">
+        Powered by MobileNetV2 | Deep Learning Model
+    </div>
+
+</div>
+
+</body>
+</html>

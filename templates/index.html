@@ -1,45 +1,46 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>DeepShield - AI Detection System</title>
+    <title>DeepShield AI Detection</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <style>
         body {
             margin: 0;
             font-family: 'Segoe UI', sans-serif;
-            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            background: linear-gradient(135deg, #141e30, #243b55);
             color: white;
+            padding: 30px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+            gap: 30px;
+            flex-wrap: wrap;
         }
 
         .card {
-            background: rgba(255, 255, 255, 0.08);
+            flex: 1;
+            background: rgba(255,255,255,0.08);
             backdrop-filter: blur(12px);
             border-radius: 20px;
-            padding: 40px;
-            width: 420px;
-            text-align: center;
-            box-shadow: 0 0 30px rgba(0,0,0,0.5);
-            animation: fadeIn 1s ease-in-out;
+            padding: 25px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
         }
 
         h1 {
-            margin-bottom: 20px;
-            font-size: 26px;
+            text-align: center;
+            margin-bottom: 30px;
         }
 
         input[type="file"] {
-            margin: 15px 0;
-            color: white;
+            margin-bottom: 15px;
         }
 
         button {
-            padding: 10px 25px;
-            font-size: 16px;
+            padding: 10px 20px;
             border-radius: 30px;
             border: none;
             cursor: pointer;
@@ -53,82 +54,97 @@
         }
 
         img {
-            margin-top: 20px;
-            width: 250px;
-            border-radius: 15px;
-            box-shadow: 0 0 20px rgba(0,0,0,0.6);
-        }
-
-        .badge {
-            margin-top: 20px;
-            font-size: 20px;
-            font-weight: bold;
-            padding: 10px;
-            border-radius: 20px;
-        }
-
-        .progress-container {
             width: 100%;
-            background: rgba(255,255,255,0.2);
-            border-radius: 30px;
+            border-radius: 15px;
             margin-top: 15px;
         }
 
-        .progress-bar {
-            height: 25px;
-            border-radius: 30px;
-            text-align: center;
-            line-height: 25px;
+        .badge {
+            font-size: 20px;
+            padding: 10px;
+            border-radius: 15px;
+            margin-bottom: 15px;
             font-weight: bold;
-            transition: width 1s ease-in-out;
+            text-align: center;
         }
 
-        @keyframes fadeIn {
-            from {opacity: 0; transform: translateY(20px);}
-            to {opacity: 1; transform: translateY(0);}
+        .bar {
+            height: 20px;
+            border-radius: 20px;
+            margin-bottom: 10px;
+        }
+
+        .error {
+            color: #ff4d4d;
+            font-weight: bold;
+        }
+
+        .details {
+            font-size: 14px;
+            opacity: 0.9;
         }
 
         .footer {
-            margin-top: 20px;
+            text-align: center;
+            margin-top: 30px;
             font-size: 12px;
             opacity: 0.7;
         }
-
     </style>
 </head>
 <body>
 
-<div class="card">
+<h1>🔍 DeepShield - AI Image Detection System</h1>
 
-    <h1>🔍 DeepShield AI Detection</h1>
+<div class="container">
 
-    <form method="POST" enctype="multipart/form-data">
-        <input type="file" name="image" required>
-        <br>
-        <button type="submit">Analyze Image</button>
-    </form>
+    <div class="card">
+        <form method="POST" enctype="multipart/form-data">
+            <input type="file" name="image" required>
+            <br>
+            <button type="submit">Analyze Image</button>
+        </form>
+
+        {% if error %}
+            <p class="error">{{ error }}</p>
+        {% endif %}
+
+        {% if image_name %}
+            <img src="{{ url_for('static', filename='uploads/' + image_name) }}">
+        {% endif %}
+    </div>
 
     {% if label %}
+    <div class="card">
 
         <div class="badge" style="background-color: {{ color }};">
             {{ label }}
         </div>
 
-        <div class="progress-container">
-            <div class="progress-bar"
-                 style="width: {{ confidence }}%; background: linear-gradient(90deg, {{ color }}, #ffffff33);">
-                {{ confidence }}%
-            </div>
+        <div>
+            <p>Real Confidence: {{ real_conf }}%</p>
+            <div class="bar" style="width: {{ real_conf }}%; background: #00ff88;"></div>
+
+            <p>AI Generated Confidence: {{ fake_conf }}%</p>
+            <div class="bar" style="width: {{ fake_conf }}%; background: #ff4d4d;"></div>
         </div>
 
-        <img src="{{ image_path }}">
+        <hr>
 
+        <div class="details">
+            <p><b>Format:</b> {{ details.format }}</p>
+            <p><b>Resolution:</b> {{ details.size }}</p>
+            <p><b>Color Mode:</b> {{ details.mode }}</p>
+            <p><b>Analyzed At:</b> {{ timestamp }}</p>
+        </div>
+
+    </div>
     {% endif %}
 
-    <div class="footer">
-        Powered by MobileNetV2 | Deep Learning Model
-    </div>
+</div>
 
+<div class="footer">
+    Built by Tanavi Shinde | Deep Learning | MobileNetV2 | Flask | TensorFlow
 </div>
 
 </body>

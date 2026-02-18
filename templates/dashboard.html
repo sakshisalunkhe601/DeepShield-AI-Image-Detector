@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+
+<div style="width:90%;margin:40px auto;">
+
+<h1 style="text-align:center;">DeepShield AI Detection</h1>
+<h3 style="text-align:center;">Welcome {{ username }}</h3>
+
+<div class="card" style="margin-top:30px;text-align:center;">
+<form method="POST" enctype="multipart/form-data">
+<input type="file" name="image" required>
+<br><br>
+<button type="submit">Analyze</button>
+</form>
+</div>
+
+{% if result %}
+<div style="display:flex;gap:40px;margin-top:40px;">
+<div style="flex:1;">
+<img src="{{ url_for('static', filename='uploads/' + result.image) }}"
+style="width:100%;border-radius:15px;">
+</div>
+
+<div style="flex:1;" class="card">
+<h2>{{ result.label }}</h2>
+
+<div style="background:#222;border-radius:20px;height:25px;">
+<div style="width:{{ result.confidence }}%;
+background:linear-gradient(90deg,#00ffcc,#0072ff);
+height:100%;text-align:center;">
+{{ result.confidence }}%
+</div>
+</div>
+
+<h3>Why?</h3>
+<p>{{ result.explanation }}</p>
+</div>
+</div>
+{% endif %}
+
+{% if history %}
+<div class="card" style="margin-top:40px;">
+<h3>Prediction History</h3>
+<table>
+<tr><th>Image</th><th>Result</th><th>Confidence</th><th>Date</th></tr>
+{% for item in history %}
+<tr>
+<td><img src="{{ url_for('static', filename='uploads/' + item[0]) }}" width="60"></td>
+<td>{{ item[1] }}</td>
+<td>{{ item[2] }}%</td>
+<td>{{ item[3] }}</td>
+</tr>
+{% endfor %}
+</table>
+</div>
+{% endif %}
+
+<div style="text-align:center;margin-top:40px;">
+<a href="{{ url_for('logout') }}"><button>Logout</button></a>
+</div>
+
+</div>
+
+{% endblock %}

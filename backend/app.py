@@ -5,6 +5,8 @@ import numpy as np
 import os
 import cv2
 from tensorflow.keras.preprocessing import image
+from datetime import datetime
+import ast
 
 app = Flask(__name__)
 CORS(app)
@@ -13,98 +15,64 @@ UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
 IMG_SIZE = 224
+THRESHOLD = 0.5
 
-# Load trained model
 model = tf.keras.models.load_model("models/deepshield_model.h5")
 
-@app.route("/")
-def home():
-    return "DeepShield Backend Running"
+# Load class mapping
+with open("models/class_indices.txt", "r") as f:
+    class_indices = ast.literal_eval(f.read())
 
-# ✅ STRONG ANALYSIS LOGIC
+print("✅ Class Mapping Loaded:", class_indices)
+
+# Determine which index is AI
+ai_class_index = None
+for key, value in class_indices.items():
+    if key.lower() in ["fake", "ai"]:
+        ai_class_index = value
+
+print("✅ AI Class Index:", ai_class_index)
+
 def analyze(score):
-    """
-    Assumption:
-    Model output close to 1 → AI Generated
-    Model output close to 0 → Real Image
-    """
 
-    ai_probability = score
-    real_probability = 1 - score
+    if ai_class_index == 1:
+        ai_probability = score
+    else:
+        ai_probability = 1 - score
 
-    if ai_probability >= 0.5:
+    if ai_probability >= THRESHOLD:
         label = "AI Generated"
         confidence = ai_probability * 100
+        color = "red"
     else:
         label = "Real"
-        confidence = real_probability * 100
+        confidence = (1 - ai_probability) * 100
+        color = "green"
 
-    return label, round(confidence, 2)
+    return label, round(confidence, 2), color
 
 @app.route("/api/predict-image", methods=["POST"])
 def predict_image():
 
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-
     file = request.files["file"]
     path = os.path.join(UPLOAD_FOLDER, file.filename)
     file.save(path)
 
-    # Preprocessing
     img = image.load_img(path, target_size=(IMG_SIZE, IMG_SIZE))
-    img_array = image.img_to_array(img)
-    img_array = img_array / 255.0
+    img_array = image.img_to_array(img) / 255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    # Prediction
-    prediction = float(model.predict(img_array)[0][0])
+    prediction = float(model.predict(img_array, verbose=0)[0][0])
+    print("RAW OUTPUT:", prediction)
 
-    label, confidence = analyze(prediction)
-
-    return jsonify({
-        "label": label,
-        "confidence": confidence,
-        "raw_score": round(prediction, 4)
-    })
-
-@app.route("/api/predict-video", methods=["POST"])
-def predict_video():
-
-    if "file" not in request.files:
-        return jsonify({"error": "No file uploaded"}), 400
-
-    file = request.files["file"]
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
-
-    cap = cv2.VideoCapture(path)
-    preds = []
-
-    while True:
-        ret, frame = cap.read()
-        if not ret:
-            break
-
-        frame = cv2.resize(frame, (IMG_SIZE, IMG_SIZE))
-        frame = frame / 255.0
-        frame = np.expand_dims(frame, axis=0)
-
-        pred = float(model.predict(frame)[0][0])
-        preds.append(pred)
-
-    cap.release()
-
-    if len(preds) == 0:
-        return jsonify({"error": "Could not process video"}), 400
-
-    avg_score = float(np.mean(preds))
-    label, confidence = analyze(avg_score)
+    label, confidence, color = analyze(prediction)
 
     return jsonify({
         "label": label,
         "confidence": confidence,
-        "raw_score": round(avg_score, 4)
+        "raw_score": round(prediction, 4),
+        "color": color,
+        "analysis_time": datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     })
 
 if __name__ == "__main__":
